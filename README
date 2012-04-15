@@ -1,0 +1,70 @@
+Copyright (c) 2010 Massachusetts Institute of Technology
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+**********************************************************
+About Umbra
+
+Umbra is an efficient and scalable memory shadowing framework built on
+top of DynamoRIO, a dynamic instrumentation tool platform. Umbra
+employs a novel translation scheme, which supports efficient mapping
+from application data to shadow metadata for 64-bit
+applications. Umbra's translation scheme does not rely on any platform 
+features and is not restricted to any specific shadow memory size. 
+
+The Umbra home page:
+
+  http://people.csail.mit.edu/qin_zhao/umbra/
+
+************************************************************
+Quickstart instructions for building and running Umbra:
+
+CMake is required for building Umbra.
+
+--------------------------------------------------
+1. download and install DynamoRIO from www.dynamorio.org
+   assume DynamoRIO is installed at /path/to/dynamorio/
+
+2. download and extract Umbra from http://people.csail.mit.edu/qin_zhao/umbra/
+
+3. extract and build Umbra
+   - tar xzf umbra-linux-0.2.tgz
+   - cd umbra-linux-0.2
+   - mkdir build
+   - cd build
+   - ccmake ../  
+     * press c to configure
+     * press e to exit help
+     * put /path/to/dynamorio/cmake at DynamoRIO_DIR
+     * set one and only one CLIENT ON e.g. UMBRA_CLIENT_SHARE_COUNT
+     * press c for configuration
+     * press g to generate makefile and quit
+   - make
+   - /path/to/dynamorio/bin64/drrun -ops "-thread_private -max_bb_instrs 512 -no_finite_bb_cache -no_finite_trace_cache" -client /path/to/umbra/build/bin/libumbra.so 0 "" ls
+
+************************************************************
+Getting help and reporting bugs:
+
+This is a test release.
+Please email qin.zhao@gmail.com for any issues of using Umbra.
+
+************************************************************

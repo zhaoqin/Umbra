@@ -1,0 +1,2 @@
+#new command to run
+# /path/to/dynamorio/bin64/drrun -ops "-max_bb_instrs 512 -no_finite_bb_cache -no_finite_trace_cache -thread_private" -client /path/to/umbra/bin/libraryname.so 0 "" ls
