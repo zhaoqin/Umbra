@@ -352,7 +352,7 @@ register_is_updated(instr_t *instr, reg_id_t reg)
     if(instr_writes_to_reg(instr, reg))
         return true;
 
-    if(reg != REG_ESP)
+    if(reg != DR_REG_XSP)
         return false;
 
     /* special handling for %rsp, 
@@ -433,7 +433,7 @@ register_is_used_for_mem(instr_t *instr, reg_id_t reg)
     if (instr_get_opcode(instr) == OP_lea)
         return false;
 
-    if (reg == REG_ECX && instr_is_rep_ins(instr))
+    if (reg == DR_REG_XCX && instr_is_rep_ins(instr))
         return true;
 
     // check srcs

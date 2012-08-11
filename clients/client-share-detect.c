@@ -92,7 +92,7 @@ instrument_update(void         *drcontext,
     instrlist_meta_preinsert(ilist, where, label);
 
     /* test [%reg].tid_map, tid_map*/
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32(tls_data->tid_map);
@@ -107,7 +107,7 @@ instrument_update(void         *drcontext,
     instr = INSTR_CREATE_jcc(drcontext, OP_jnz, opnd1);
     instrlist_meta_preinsert(ilist, label, instr);
     /* racy or */
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32(tls_data->tid_map);
@@ -124,7 +124,7 @@ ref_is_interested(umbra_info_t *info, mem_ref_t *ref)
 {
     if (opnd_is_far_base_disp(ref->opnd))
         return false;
-    if (opnd_uses_reg(ref->opnd, REG_XSP))
+    if (opnd_uses_reg(ref->opnd, DR_REG_XSP))
 	return false;
     if (ref->opcode == OP_leave || ref->opcode == OP_enter)
         return false;

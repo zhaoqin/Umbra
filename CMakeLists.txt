@@ -125,7 +125,7 @@ if (NOT DEFINED DynamoRIO_DIR)
     "DynamoRIO installation's cmake directory")
 endif (NOT DEFINED DynamoRIO_DIR)
 
-find_package(DynamoRIO 1.4)
+find_package(DynamoRIO 3.0)
 if (NOT DynamoRIO_FOUND)
   message(FATAL_ERROR "DynamoRIO package required to build")
 endif(NOT DynamoRIO_FOUND)

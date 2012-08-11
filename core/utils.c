@@ -98,7 +98,7 @@ umbra_save_eax_aflags(void         *drcontext,
     instr = INSTR_CREATE_mov_st(drcontext, 
                                 OPND_CREATE_ABSMEM(&info->aflags,
                                                    OPSZ_4),
-                                opnd_create_reg(REG_EAX));
+                                opnd_create_reg(DR_REG_EAX));
     instrlist_meta_preinsert(ilist, where, instr);
 }
 
@@ -113,7 +113,7 @@ umbra_restore_eax_aflags(void         *drcontext,
     instr_t *instr;
 
     instr = INSTR_CREATE_mov_ld(drcontext,
-                                opnd_create_reg(REG_EAX),
+                                opnd_create_reg(DR_REG_EAX),
                                 OPND_CREATE_ABSMEM(&info->aflags,
                                                    OPSZ_4)),
     instrlist_meta_preinsert(ilist, where, instr);
@@ -193,7 +193,7 @@ ref_is_stack_mem(basic_block_t *bb, mem_ref_t *ref)
 {
     if (!opnd_is_base_disp(ref->opnd))
         return false;
-    if (opnd_get_base(ref->opnd) == REG_XSP)
+    if (opnd_get_base(ref->opnd) == DR_REG_XSP)
         return true;
     return false;
 }
@@ -205,7 +205,7 @@ ref_is_tls(opnd_t opnd)
     reg_id_t seg;
     if (opnd_is_far_base_disp(opnd)) {
         seg = opnd_get_segment(opnd);
-        if (seg == SEG_FS || seg == SEG_GS)
+        if (seg == DR_SEG_FS || seg == DR_SEG_GS)
             return true;
     }
     return false;
@@ -216,7 +216,7 @@ bool
 ref_is_local_var(basic_block_t *bb, mem_ref_t *ref)
 {
     if (ref_is_stack_mem(bb, ref) &&
-        opnd_get_index(ref->opnd) != REG_NULL)
+        opnd_get_index(ref->opnd) != DR_REG_NULL)
         return true;
     
     return false;
@@ -289,10 +289,10 @@ reg_to_32bit(reg_id_t reg)
     if (reg_is_32bit(reg))
         return reg;
     if (reg_is_64bit(reg)) 
-        return (reg + (REG_START_32 - REG_START_64));
+        return (reg + (DR_REG_START_32 - DR_REG_START_64));
     
     DR_ASSERT(false);
-    return REG_NULL;
+    return DR_REG_NULL;
 }
 
 

@@ -83,11 +83,11 @@
 #define OP_cbr_fall  -2
 
 
-#define REG_SPILL_START REG_XAX
+#define REG_SPILL_START DR_REG_XAX
 #ifdef X64
-# define REG_SPILL_STOP REG_R15
+# define REG_SPILL_STOP DR_REG_R15
 #else
-# define REG_SPILL_STOP REG_EDI
+# define REG_SPILL_STOP DR_REG_EDI
 #endif
 #define NUM_SPILL_REGS  (REG_SPILL_STOP - REG_SPILL_START + 1)
 

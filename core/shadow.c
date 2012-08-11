@@ -1629,53 +1629,53 @@ set_reg_in_mcontext(dr_mcontext_t *mcontext,
                     reg_t    value)
 {
     switch (reg) {
-    case REG_XAX:
+    case DR_REG_XAX:
         mcontext->xax = value;
         break;
-    case REG_XBX:
+    case DR_REG_XBX:
         mcontext->xbx = value;
         break;
-    case REG_XCX:
+    case DR_REG_XCX:
         mcontext->xcx = value;
         break;
-    case REG_XDX:
+    case DR_REG_XDX:
         mcontext->xdx = value;
         break;
-    case REG_XDI:
+    case DR_REG_XDI:
         mcontext->xdi = value;
         break;
-    case REG_XSI:
+    case DR_REG_XSI:
         mcontext->xsi = value;
         break;
-    case REG_XBP:
+    case DR_REG_XBP:
         mcontext->xbp = value;
         break;
-    case REG_XSP:
+    case DR_REG_XSP:
         mcontext->xsp = value;
         break;
 #ifdef X64
-    case REG_R8:
+    case DR_REG_R8:
         mcontext->r8  = value;
         break;
-    case REG_R9:
+    case DR_REG_R9:
         mcontext->r9  = value;
         break;
-    case REG_R10:
+    case DR_REG_R10:
         mcontext->r10 = value;
         break;
-    case REG_R11:
+    case DR_REG_R11:
         mcontext->r11 = value;
         break;
-    case REG_R12:
+    case DR_REG_R12:
         mcontext->r12 = value;
         break;
-    case REG_R13:
+    case DR_REG_R13:
         mcontext->r13 = value;
         break;
-    case REG_R14:
+    case DR_REG_R14:
         mcontext->r14 = value;
         break;
-    case REG_R15:
+    case DR_REG_R15:
         mcontext->r15 = value;
         break;
 #endif
@@ -1696,7 +1696,7 @@ update_mcontext(void *drcontext,
     int num_opnds, i;
 
     instr_init(drcontext, &instr);
-    decode(drcontext, siginfo->raw_mcontext.pc, &instr);
+    decode(drcontext, siginfo->raw_mcontext->pc, &instr);
     
     num_opnds = instr_num_srcs(&instr);
     for (i = 0; i < num_opnds; i++) {
@@ -1704,11 +1704,11 @@ update_mcontext(void *drcontext,
         if (!opnd_is_memory_reference(opnd))
             continue;
         if (siginfo->access_address !=
-            opnd_compute_address(opnd, &siginfo->raw_mcontext))
+            opnd_compute_address(opnd, siginfo->raw_mcontext))
             continue;
         DR_ASSERT(opnd_is_base_disp(opnd) &&
-                  opnd_get_index(opnd) == REG_NULL);
-        set_reg_in_mcontext(&siginfo->raw_mcontext,
+                  opnd_get_index(opnd) == DR_REG_NULL);
+        set_reg_in_mcontext(siginfo->raw_mcontext,
                             opnd_get_base(opnd),
                             (reg_t)shd_addr - opnd_get_disp(opnd));
         instr_free(drcontext, &instr);
@@ -1720,11 +1720,11 @@ update_mcontext(void *drcontext,
         if (!opnd_is_memory_reference(opnd))
             continue;
         if (siginfo->access_address !=
-            opnd_compute_address(opnd, &siginfo->raw_mcontext))
+            opnd_compute_address(opnd, siginfo->raw_mcontext))
             continue;
         DR_ASSERT(opnd_is_base_disp(opnd) &&
-                  opnd_get_index(opnd) == REG_NULL);
-        set_reg_in_mcontext(&siginfo->raw_mcontext,
+                  opnd_get_index(opnd) == DR_REG_NULL);
+        set_reg_in_mcontext(siginfo->raw_mcontext,
                             opnd_get_base(opnd),
                             (reg_t)shd_addr - opnd_get_disp(opnd));
         instr_free(drcontext, &instr);
@@ -1784,7 +1784,7 @@ shadow_signal(void *drcontext, umbra_info_t *umbra_info, dr_siginfo_t *siginfo)
     dr_mutex_lock(proc_info.mutex);
     cache = get_ref_cache(drcontext, umbra_info,
                           siginfo->fault_fragment_info.cache_start_pc,
-                          siginfo->raw_mcontext.pc);
+                          siginfo->raw_mcontext->pc);
     /* get original app addr */
     /* XXX: If there are two offset, which one I should use? */
     for (i = 0; i < MAX_NUM_SHADOWS; i++) {

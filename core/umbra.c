@@ -286,13 +286,12 @@ umbra_fork_init(void *drcontext)
 static void
 add_stack_module(void *drcontext, umbra_info_t *info)
 {
-    dr_mcontext_t mcontext;
-    int           app_errno;
+    dr_mcontext_t mcontext = {sizeof(mcontext), DR_MC_ALL, };
     memory_map_t  *map;
     memory_mod_t  *mod;
     int i;
 
-    dr_get_mcontext(drcontext, &mcontext, &app_errno);
+    dr_get_mcontext(drcontext, &mcontext);
     dr_mutex_lock(proc_info.mutex);
     mod = memory_mod_app_lookup((void *)mcontext.xsp);
     DR_ASSERT(mod != NULL);
@@ -557,11 +556,10 @@ reg_t
 umbra_get_arg(int index)
 {
     void *drcontext;
-    dr_mcontext_t mc;
-    int error_no;
+    dr_mcontext_t mc  = {sizeof(mc), DR_MC_ALL, };
     reg_t arg;
     drcontext = dr_get_current_drcontext();
-    dr_get_mcontext(drcontext, &mc, &error_no);
+    dr_get_mcontext(drcontext, &mc);
     switch (index) {
     case 0:
         arg = mc.rdi;
@@ -591,9 +589,8 @@ reg_t
 umbra_get_ret_value()
 {
     void *drcontext = dr_get_current_drcontext();
-    dr_mcontext_t mc;
-    int error_no;
-    dr_get_mcontext(drcontext, &mc, &error_no);
+    dr_mcontext_t mc  = {sizeof(mc), DR_MC_ALL, };
+    dr_get_mcontext(drcontext, &mc);
     return mc.rax;
 }
 

@@ -93,7 +93,7 @@ instrument_memory_read(void         *drcontext,
 
     /* check if my bit is in it */
     /* test [%reg].tid_map, tid_map */
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->tid_map);
@@ -109,7 +109,7 @@ instrument_memory_read(void         *drcontext,
     instrlist_meta_preinsert(ilist, label, instr);
     /* it is a miss */
     /* add myself into the bitmap in shadow memory, or */
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->tid_map);
@@ -122,14 +122,14 @@ instrument_memory_read(void         *drcontext,
     /* update the thread correlation counter */
     /* get the array index */
     opnd1 = opnd_create_reg(reg_64_to_32(reg));
-    opnd2 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd2 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
 				  offsetof(shadow_data_t, thd),
 				  OPSZ_4);
     instr = INSTR_CREATE_mov_ld(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, label, instr);
 
     /* inc */
-    opnd1 = opnd_create_base_disp(REG_NULL, reg, 8,
+    opnd1 = opnd_create_base_disp(DR_REG_NULL, reg, 8,
 				  (reg_t)tls_data->counter, 
 				  OPSZ_8);
     instr = INSTR_CREATE_inc(drcontext, opnd1);
@@ -153,7 +153,7 @@ instrument_memory_write(void         *drcontext,
     label = INSTR_CREATE_label(drcontext);
     instrlist_meta_preinsert(ilist, where, label);
     /* check if I am the exclusive owner: cmp [%reg].tid_map, tid_map*/
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->tid_map);
@@ -168,7 +168,7 @@ instrument_memory_write(void         *drcontext,
     instr = INSTR_CREATE_jcc(drcontext, OP_je, opnd1);
     instrlist_meta_preinsert(ilist, label, instr);
     /* else, set me as */
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, tid_map),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->tid_map);
@@ -181,20 +181,20 @@ instrument_memory_write(void         *drcontext,
     reg_id_t r2 = umbra_info->steal_regs[1];
     /* update the thread correlation counter */
     opnd1 = opnd_create_reg(reg_64_to_32(r2));
-    opnd2 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd2 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
 				  offsetof(shadow_data_t, thd),
 				  OPSZ_4);
     instr = INSTR_CREATE_mov_ld(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, label, instr);
 
     /* inc */
-    opnd1 = opnd_create_base_disp(REG_NULL, r2, 8,
+    opnd1 = opnd_create_base_disp(DR_REG_NULL, r2, 8,
 				  (reg_t)tls_data->counter, 
 				  OPSZ_8);
     instr = INSTR_CREATE_inc(drcontext, opnd1);
     instrlist_meta_preinsert(ilist, label, instr);
     /* update with my own id */
-    opnd1 = opnd_create_base_disp(reg, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(reg, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, thd),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->myid);
@@ -254,7 +254,7 @@ ref_is_interested(umbra_info_t *info, mem_ref_t *ref)
         ref->opcode == OP_push  || ref->opcode == OP_pop)
         return false;
     /* skip stack reference */
-    if (opnd_uses_reg(ref->opnd, REG_XSP))
+    if (opnd_uses_reg(ref->opnd, DR_REG_XSP))
 	return false;
     if ((opnd_is_rel_addr(ref->opnd) || opnd_is_abs_addr(ref->opnd)) && 
         (reg_t)opnd_get_addr(ref->opnd) > (reg_t)0xffffffff00000000)

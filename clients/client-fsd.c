@@ -104,7 +104,7 @@ emit_read_update_code(void *drcontext,
 
     /* align to cacheline */
     opnd1 = opnd_create_reg(r1);
-    opnd2 = OPND_CREATE_MEM64(REG_NULL, 
+    opnd2 = OPND_CREATE_MEM64(DR_REG_NULL, 
                               (int)(reg_t)&client_proc_data.mask);
     instr = INSTR_CREATE_and(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, NULL, instr);
@@ -197,7 +197,7 @@ emit_lean_func_read_code(void *drcontext,
     instrlist_meta_preinsert(ilist, NULL, instr);
 
     /* check if anyone write this location yet */
-    opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, bitmap),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)LOCATION_WRITE_BIT_OTHERS);
@@ -277,7 +277,7 @@ emit_lean_func_write_code(void *drcontext,
     instrlist_meta_preinsert(ilist, NULL, instr);
 
     /* check if anyone write this location yet */
-    opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, bitmap),
                                   OPSZ_4);
     int x = LOCATION_WRITE_BIT_OTHERS;
@@ -348,7 +348,7 @@ code_cache_thread_init(void *drcontext, umbra_info_t *info)
 
     for (p1 = 0; p1 < NUM_SPILL_REGS; p1++) {
         UMBRA_POS_TO_REG(r1, p1);
-	if (r1 == REG_XAX || r1 == REG_XSP)
+	if (r1 == DR_REG_XAX || r1 == DR_REG_XSP)
             continue;
 	pc = umbra_align_cache_line(pc);
 	tls_data->read_update_pc[p1] = pc;
@@ -360,12 +360,12 @@ code_cache_thread_init(void *drcontext, umbra_info_t *info)
 
     for (p1 = 0; p1 < NUM_SPILL_REGS; p1++) {
         UMBRA_POS_TO_REG(r1, p1);
-        if (r1 == REG_XAX || r1 == REG_XSP)
+        if (r1 == DR_REG_XAX || r1 == DR_REG_XSP)
             continue;
         /* assuming r1 is always before r2*/
         for (p2 = p1 + 1; p2 < NUM_SPILL_REGS; p2++) {
             UMBRA_POS_TO_REG(r2, p2);
-            if (r2 == REG_XAX || r2 == REG_XSP)
+            if (r2 == DR_REG_XAX || r2 == DR_REG_XSP)
                 continue;
             pc = umbra_align_cache_line(pc);
             tls_data->lean_func_read_pc[p1][p2] = pc;
@@ -429,7 +429,7 @@ instrument_memory_read(void         *drcontext,
     instrlist_meta_preinsert(ilist, where, instr);
 
     /* test [%r1].bitmap, bitmap */
-    opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, bitmap),
                                   OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)tls_data->bitmap);
@@ -534,7 +534,7 @@ instrument_memory_write(void         *drcontext,
     instrlist_meta_preinsert(ilist, where, instr);
 
     /* check if I am the only owner: cmp [%reg].bitmap, bitmap*/
-    opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+    opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
                                   offsetof(shadow_data_t, bitmap),
                                   OPSZ_2);
     opnd2 = OPND_CREATE_INT16(tls_data->bitmap);
@@ -640,7 +640,7 @@ ref_is_interested(umbra_info_t *info, mem_ref_t *ref)
     if (opnd_is_far_base_disp(ref->opnd))
         return false;
     /* skip stack reference */
-    if (opnd_uses_reg(ref->opnd, REG_XSP))
+    if (opnd_uses_reg(ref->opnd, DR_REG_XSP))
 	return false;
     if (ref->opcode == OP_leave || ref->opcode == OP_enter)
         return false;

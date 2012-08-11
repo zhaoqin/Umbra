@@ -295,7 +295,7 @@ clean_call ()
    instrlist_meta_preinsert(ilist, where, instr);
 
    /* Compare r2 (Reference ID) with Last Writer */
-   opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+   opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
 				 offsetof(shadow_data_t,
 					  writer_instr_id),
 				 size);
@@ -314,7 +314,7 @@ clean_call ()
 
    /* Update Step 1: mov shadow->id %r2 */
    opnd1 = opnd_create_reg(r2);
-   opnd2 = opnd_create_base_disp(r1, REG_NULL, 0,
+   opnd2 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
 				 offsetof(shadow_data_t, 
 					  writer_instr_id),
 				 size);
@@ -322,7 +322,7 @@ clean_call ()
    instrlist_meta_preinsert(ilist, where, instr);
 
    /* Update Step 2: mov ref->id shadow->id */
-   opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+   opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
 				 offsetof(shadow_data_t, 
 					  writer_instr_id),
 				 size);
@@ -398,7 +398,7 @@ clean_call ()
    
    /* High Level: Compare Memory Reference ID <-> Last Writer ID */
    /* Low Level: cmp ref->id shadow->id */
-   opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+   opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
 				 offsetof(shadow_data_t,
 					  writer_instr_id),
 				 size);
@@ -416,7 +416,7 @@ clean_call ()
 
    /* High Level: Update, Memory Reference ID -> Last Writer ID */
    /* Low Level: mov ref->id shadow->id */
-   opnd1 = opnd_create_base_disp(r1, REG_NULL, 0,
+   opnd1 = opnd_create_base_disp(r1, DR_REG_NULL, 0,
 				 offsetof(shadow_data_t,
 					  writer_instr_id),
 				 size);
@@ -479,7 +479,7 @@ clean_call ()
    /* Low Level: move shadow->id -> r2 */
    opnd1 = opnd_create_reg(r2);
    opnd2 = opnd_create_base_disp(reg_addr,
-				 REG_NULL, 0,
+				 DR_REG_NULL, 0,
 				 offsetof(shadow_data_t,
 					  writer_instr_id),
 				 size);
@@ -1030,13 +1030,13 @@ generate_code_permutations()
     {
       UMBRA_POS_TO_REG(r1, pos1);
       
-      if (r1 == REG_XAX || r1 == REG_XSP)
+      if (r1 == DR_REG_XAX || r1 == DR_REG_XSP)
 	continue;
       
       for (pos2 = pos1 + 1; pos2 < NUM_SPILL_REGS; pos2++)
 	{
 	  UMBRA_POS_TO_REG(r2, pos2);
-	  if (r2 == REG_XAX || r2 == REG_XSP)
+	  if (r2 == DR_REG_XAX || r2 == DR_REG_XSP)
 	    continue;
 	  
 	  pc = umbra_align_cache_line(pc);

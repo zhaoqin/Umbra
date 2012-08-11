@@ -99,7 +99,7 @@ analyze_client_code(void *drcontext,
 
     /* lea [ref] => r1 */
     ref = instr_get_src(where, 0);
-    if (!opnd_is_base_disp(ref) || opnd_get_index(ref) != REG_NULL)
+    if (!opnd_is_base_disp(ref) || opnd_get_index(ref) != DR_REG_NULL)
         return next;
 
     lea = where;
@@ -188,12 +188,12 @@ reg_update_is_limited(instr_t *instr, reg_id_t reg)
             return false;
         return true;
     }
-    if (reg != REG_XSP)
+    if (reg != DR_REG_XSP)
         return false;
 
     if (opcode >= OP_push && opcode <= OP_popa) {
         if (opcode == OP_pop && opnd_same(instr_get_dst(instr, 0),
-                                          opnd_create_reg(REG_XSP)))
+                                          opnd_create_reg(DR_REG_XSP)))
             return false;
         return true;
     }

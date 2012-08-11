@@ -181,8 +181,8 @@ ilist_info_mems_init(void         *drcontext,
         if (client->ref_is_interested(umbra_info, &bb->refs[i])) {
             opnd_t opnd = bb->refs[i].opnd;
             ilist_info->mems[j].ref   = &bb->refs[i];
-            ilist_info->mems[j].base  = REG_NULL;
-            ilist_info->mems[j].index = REG_NULL;
+            ilist_info->mems[j].base  = DR_REG_NULL;
+            ilist_info->mems[j].index = DR_REG_NULL;
             ilist_info->mems[j].disp  = 0;
             if (opnd_is_base_disp(opnd)) {
                 ilist_info->mems[j].base  = opnd_get_base(opnd);
@@ -198,8 +198,8 @@ ilist_info_mems_init(void         *drcontext,
                 ilist_info->mems[j].disp -= STACK_ALIGN_SIZE;
             } else if (opcode == OP_push && 
                        opnd_same(opnd, 
-                                 opnd_create_base_disp(REG_XSP, 
-                                                       REG_NULL, 
+                                 opnd_create_base_disp(DR_REG_XSP, 
+                                                       DR_REG_NULL, 
                                                        0, 0, 
                                                        OPSZ_VARSTACK))) {
                 ilist_info->mems[j].disp -= STACK_ALIGN_SIZE;
@@ -250,7 +250,7 @@ reg_update_is_known(instr_t *instr, ref_group_t ref_group[], reg_id_t reg, int p
     }
     
     /* for case like push, pop */
-    if (reg != REG_XSP)
+    if (reg != DR_REG_XSP)
         return false;
     
     if (opcode == OP_push || opcode == OP_push_imm || opcode == OP_pushf || 
@@ -268,7 +268,7 @@ reg_update_is_known(instr_t *instr, ref_group_t ref_group[], reg_id_t reg, int p
     if (opcode == OP_pop || opcode == OP_ret) {
         /* pop %rsp */
         if (opcode == OP_pop && opnd_same(instr_get_dst(instr, 0),
-                                          opnd_create_reg(REG_XSP)))
+                                          opnd_create_reg(DR_REG_XSP)))
             return false;
         ref_group[pos].offset += STACK_ALIGN_SIZE;
         return true;
@@ -324,8 +324,8 @@ ilist_info_mems_update(ilist_info_t *ilist_info,
     /* find the ref and set its group */
     for (i = 0; i < ilist_info->num_mems; i++) {
         if (ilist_info->mems[i].ref->instr == instr &&
-            ilist_info->mems[i].base  != REG_NULL   &&
-            ilist_info->mems[i].index == REG_NULL) {
+            ilist_info->mems[i].base  != DR_REG_NULL   &&
+            ilist_info->mems[i].index == DR_REG_NULL) {
             UMBRA_REG_TO_POS(ilist_info->mems[i].base, pos);
             if (ref_group[pos].leader == -1) {
                 ref_group[pos].leader = i;
@@ -504,7 +504,7 @@ ilist_info_find_steal_reg(ilist_info_t *ilist_info)
     min_cnt = 10000;
     for (i = 0; i < NUM_SPILL_REGS; i++) {
         /* skip special registers: stack (xsp) and aflag reg (xax) */
-        if (regs[i].reg == REG_XSP || regs[i].reg == REG_XAX) 
+        if (regs[i].reg == DR_REG_XSP || regs[i].reg == DR_REG_XAX) 
             continue;
         /* skip registers that we stolen already */
         if (regs[i].steal == true)
@@ -654,10 +654,10 @@ should_insert_aflags_stealing(ilist_info_t *ilist_info,
      * this may handle the case that instr is the first instr in 
      * instrlist?
      */
-    if (register_is_used(instr, REG_XAX)) {
+    if (register_is_used(instr, DR_REG_XAX)) {
         if (aflags->restore_now == false || 
             /* not the instr cause aflags stealing */
-            register_is_used_for_mem(instr, REG_XAX)) {
+            register_is_used_for_mem(instr, DR_REG_XAX)) {
             /* for case 1 like
              * save rax
              * save aflags => eax
@@ -679,7 +679,7 @@ should_insert_aflags_stealing(ilist_info_t *ilist_info,
     }
 
     if (aflags->save_now == false && 
-        prev != NULL && register_is_used(prev, REG_XAX)) {
+        prev != NULL && register_is_used(prev, DR_REG_XAX)) {
         if (eax->steal == false) {
             /* for case like:
              * 
@@ -693,7 +693,7 @@ should_insert_aflags_stealing(ilist_info_t *ilist_info,
             eax->restore_now = true;
             instrument = true;
         }
-        if (register_is_updated(prev, REG_XAX) &&
+        if (register_is_updated(prev, DR_REG_XAX) &&
             ilist_info->regs[0].dead == false) {
             /* for case like:
              * save rax for aflags
@@ -866,7 +866,7 @@ instrument_exp_sms64(void          *drcontext,
     instr = INSTR_CREATE_and(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, where, instr);
     /* cmp table[r2], 0*/
-    opnd1 = opnd_create_base_disp(REG_NULL, r2, 8, 
+    opnd1 = opnd_create_base_disp(DR_REG_NULL, r2, 8, 
                                   (int)L1_table, OPSZ_4);
     opnd2 = OPND_CREATE_INT32(0);
     instr = INSTR_CREATE_cmp(drcontext, opnd1, opnd2);
@@ -876,7 +876,7 @@ instrument_exp_sms64(void          *drcontext,
     instr = INSTR_CREATE_jcc(drcontext, OP_jne, opnd1);
     instrlist_meta_preinsert(ilist, where, instr);
     /* mov */
-    opnd1 = opnd_create_base_disp(REG_NULL, r2, 8,
+    opnd1 = opnd_create_base_disp(DR_REG_NULL, r2, 8,
                                   (int)L1_table, OPSZ_4);
     opnd2 = OPND_CREATE_INT32((int)L2_table);
     instr = INSTR_CREATE_mov_st(drcontext, opnd1, opnd2);
@@ -912,7 +912,7 @@ instrument_exp_sms64(void          *drcontext,
     instrlist_meta_preinsert(ilist, where, instr);
     /* mov L1_table[%r2] => %r2 */
     opnd1 = opnd_create_reg(r2);
-    opnd2 = opnd_create_base_disp(REG_NULL, r2, 8, 
+    opnd2 = opnd_create_base_disp(DR_REG_NULL, r2, 8, 
                                   (int)L1_table, OPSZ_8);
     instr = INSTR_CREATE_mov_ld(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, where, instr);
@@ -998,7 +998,7 @@ instrument_exp_memchk(void          *drcontext,
     instrlist_meta_preinsert(ilist, where, instr);
     /* add %r1, table[r2] */
     opnd1 = opnd_create_reg(r1);
-    opnd2 = opnd_create_base_disp(REG_NULL, r2, 8,
+    opnd2 = opnd_create_base_disp(DR_REG_NULL, r2, 8,
                                   (int)SMS_table, OPSZ_8);
     instr = INSTR_CREATE_add(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, where, instr);
@@ -1101,7 +1101,7 @@ instrument_update(void         *drcontext,
     client = &proc_info.client;
     ref = ilist_info->mems[mem->group.leader].ref;
     if (ref->cache == NULL) {
-        if (opnd_uses_reg(mem->ref->opnd, REG_RSP))
+        if (opnd_uses_reg(mem->ref->opnd, DR_REG_XSP))
             ref->cache = umbra_info->stack_ref_cache;
         else {
             ref->cache = table_alloc_ref_cache(drcontext, umbra_info);
@@ -1205,11 +1205,11 @@ instrument_lean_call(void         *drcontext,
     if (proc_info.options.swap_stack) {
         /* save app stack */
         opnd1 = OPND_CREATE_ABSMEM(&umbra_info->app_stack, OPSZ_PTR);
-        opnd2 = opnd_create_reg(REG_XSP);
+        opnd2 = opnd_create_reg(DR_REG_XSP);
         instr = INSTR_CREATE_mov_st(drcontext, opnd1, opnd2);
         instrlist_meta_preinsert(ilist, where, instr);
         /* load umbra stack */
-        opnd1 = opnd_create_reg(REG_XSP);
+        opnd1 = opnd_create_reg(DR_REG_XSP);
         opnd2 = OPND_CREATE_INTPTR((void *)umbra_info->umbra_stack_ptr);
         instr = INSTR_CREATE_mov_imm(drcontext, opnd1, opnd2);
         instrlist_meta_preinsert(ilist, where, instr);
@@ -1223,7 +1223,7 @@ instrument_lean_call(void         *drcontext,
         instr = INSTR_CREATE_mov_st(drcontext, opnd1, opnd2);
         instrlist_meta_preinsert(ilist, where, instr);
         /* restore app stack */
-        opnd1 = opnd_create_reg(REG_XSP);
+        opnd1 = opnd_create_reg(DR_REG_XSP);
         opnd2 = OPND_CREATE_ABSMEM(&umbra_info->app_stack, OPSZ_PTR);
         instr = INSTR_CREATE_mov_ld(drcontext, opnd1, opnd2);        
         instrlist_meta_preinsert(ilist, where, instr);
@@ -1444,14 +1444,14 @@ instrument_save_aflags(void         *drcontext,
     /* save xax */
     if (proc_info.options.opt_aflags_stealing == false ||
         ilist_info->regs[xax].dead == false) {
-        umbra_save_reg(drcontext, umbra_info, ilist, where, REG_XAX);
+        umbra_save_reg(drcontext, umbra_info, ilist, where, DR_REG_XAX);
     }
 
     /* lahf */
     instr = INSTR_CREATE_lahf(drcontext);
     instrlist_meta_preinsert(ilist, where, instr);
     /* seto al */
-    instr = INSTR_CREATE_setcc(drcontext, OP_seto, opnd_create_reg(REG_AL));
+    instr = INSTR_CREATE_setcc(drcontext, OP_seto, opnd_create_reg(DR_REG_AL));
     instrlist_meta_preinsert(ilist, where, instr);
 
     /* check if xax will be used later */
@@ -1460,7 +1460,7 @@ instrument_save_aflags(void         *drcontext,
         ilist_info->eax.steal = false;
         if (proc_info.options.opt_aflags_stealing == false ||
             ilist_info->regs[xax].dead == false)
-            umbra_restore_reg(drcontext, umbra_info, ilist, where, REG_XAX);
+            umbra_restore_reg(drcontext, umbra_info, ilist, where, DR_REG_XAX);
     }
 }
 
@@ -1483,7 +1483,7 @@ instrument_restore_aflags(void         *drcontext,
 
     if (ilist_info->regs[0].save_now == true) {
         ilist_info->regs[0].save_now = false;
-        umbra_save_reg(drcontext, umbra_info, ilist, where, REG_XAX);
+        umbra_save_reg(drcontext, umbra_info, ilist, where, DR_REG_XAX);
     }
 
     if (ilist_info->eax.steal == true && 
@@ -1504,7 +1504,7 @@ instrument_restore_aflags(void         *drcontext,
         }
 #endif
         /* add 0x7f,%al */
-        opnd1 = opnd_create_reg(REG_AL);
+        opnd1 = opnd_create_reg(DR_REG_AL);
         opnd2 = OPND_CREATE_INT8(0x7f);
         instr = INSTR_CREATE_add(drcontext, opnd1, opnd2);
         instrlist_meta_preinsert(ilist, where, instr);
@@ -1517,7 +1517,7 @@ instrument_restore_aflags(void         *drcontext,
     if (ilist_info->regs[0].restore_now == true) {
         ilist_info->regs[0].restore_now =  false;
         umbra_restore_reg(drcontext, umbra_info, 
-                         ilist, where, REG_XAX);
+                         ilist, where, DR_REG_XAX);
     }
 }
 
@@ -1662,7 +1662,7 @@ append_restore_xsp(void *drcontext,
     opnd_t   opnd1, opnd2;
     
     /* restore %xsp */
-    opnd1 = opnd_create_reg(REG_XSP);
+    opnd1 = opnd_create_reg(DR_REG_XSP);
     if (proc_info.options.swap_stack)
         opnd2 = OPND_CREATE_ABSMEM(&info->umbra_stack_ptr_off, OPSZ_PTR);
     else 
@@ -1920,7 +1920,7 @@ build_map_search_ilist(void *drcontext,
     if (proc_info.options.swap_stack == false) {
         /* save %xsp */
         opnd1 = OPND_CREATE_ABSMEM(&info->app_stack, OPSZ_PTR);
-        opnd2 = opnd_create_reg(REG_XSP);
+        opnd2 = opnd_create_reg(DR_REG_XSP);
         instr = INSTR_CREATE_mov_st(drcontext, opnd1, opnd2);
         instrlist_meta_append(ilist, instr);
     }
@@ -1933,7 +1933,7 @@ build_map_search_ilist(void *drcontext,
     match = INSTR_CREATE_label(drcontext);
 
     /* mov %reg => %rsp */
-    opnd1 = opnd_create_reg(REG_XSP);
+    opnd1 = opnd_create_reg(DR_REG_XSP);
     opnd2 = opnd_create_reg(reg);
     instr = INSTR_CREATE_mov_ld(drcontext, opnd1, opnd2);
     instrlist_meta_append(ilist, instr);
@@ -1956,7 +1956,7 @@ build_map_search_ilist(void *drcontext,
     instrlist_meta_append(ilist, instr);
     
     /* cmp %rsp app_base */
-    opnd1 = opnd_create_reg(REG_XSP);
+    opnd1 = opnd_create_reg(DR_REG_XSP);
     opnd2 = OPND_CREATE_MEMPTR(reg, offsetof(memory_map_t, app_base));
     instr = INSTR_CREATE_cmp(drcontext, opnd1, opnd2);
     instrlist_meta_append(ilist, instr);
@@ -2086,7 +2086,7 @@ emit_fast_lookup_code(void *drcontext, umbra_info_t *info)
     for (pos = 0; pos < NUM_SPILL_REGS; pos++) {
         UMBRA_POS_TO_REG(reg, pos);
         /* stack reg or aflags reg won't be used */
-        if (reg == REG_XSP || reg == REG_XAX)
+        if (reg == DR_REG_XSP || reg == DR_REG_XAX)
             continue;
         /* fast lookup */
         pc = umbra_align_cache_line(pc);
@@ -2191,11 +2191,10 @@ static void
 my_pre_func(umbra_info_t *info, void *pre_func)
 {
 #if 1
-    dr_mcontext_t mc;
-    int app_errno;
+    dr_mcontext_t mc  = {sizeof(mc), DR_MC_ALL, };
 
     DR_ASSERT(info->stack_depth < MAX_STACK_DEPTH);
-    dr_get_mcontext(info->drcontext, &mc, &app_errno);
+    dr_get_mcontext(info->drcontext, &mc);
     info->wrap_func_stack[info->stack_depth].app_ret = info->app_ret;
     info->wrap_func_stack[info->stack_depth].stack   = (void *)mc.xsp;
     info->stack_depth++;
@@ -2214,11 +2213,10 @@ my_post_func(umbra_info_t *info, void *post_func)
 {
     void (*fp)() = post_func;
 #if 1
-    dr_mcontext_t mc;
-    int app_errno;
+    dr_mcontext_t mc = {sizeof(mc), DR_MC_ALL, };
 
     DR_ASSERT(info->stack_depth > 0);
-    dr_get_mcontext(info->drcontext, &mc, &app_errno);
+    dr_get_mcontext(info->drcontext, &mc);
     /* check if the stack pointer matchs */
     info->stack_depth--;
     DR_ASSERT(info->wrap_func_stack[info->stack_depth].stack == (void *)mc.xsp - 8);
