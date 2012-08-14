@@ -454,7 +454,7 @@ instrument_memory_read(void         *drcontext,
 
     /* mov ref -> tls_data->ref */
     opnd1 = OPND_CREATE_ABSMEM(&tls_data->ref, OPSZ_PTR);
-    opnd2 = OPND_CREATE_INT32((int)ref);
+    opnd2 = OPND_CREATE_INT32((int)(ptr_int_t)ref);
     instr = INSTR_CREATE_mov_imm(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, where, instr);
 
@@ -558,7 +558,7 @@ instrument_memory_write(void         *drcontext,
 
     /* mov ref -> tls_data->ref */
     opnd1 = OPND_CREATE_ABSMEM(&tls_data->ref, OPSZ_PTR);
-    opnd2 = OPND_CREATE_INT32((int)ref);
+    opnd2 = OPND_CREATE_INT32((int)(ptr_int_t)ref);
     instr = INSTR_CREATE_mov_imm(drcontext, opnd1, opnd2);
     instrlist_meta_preinsert(ilist, where, instr);
 

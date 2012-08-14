@@ -569,7 +569,7 @@ clean_call ()
 
 
  static bool
- bb_is_interested(basic_block_t *bb)
+ bb_is_interested(umbra_inf_t *info, basic_block_t *bb)
  {
      int i;
      if (bb->num_refs == 0)

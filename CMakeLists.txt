@@ -43,6 +43,14 @@ if (DOUBLE_SHADOW)
   add_definitions(-DDOUBLE_SHADOW)
 endif (DOUBLE_SHADOW)
 
+option(UMBRA_CLIENT_PDG_SIMPLE
+        "UMBRA Program Dependency Graph Simple"
+        OFF)
+if (UMBRA_CLIENT_PDG_SIMPLE)
+  add_definitions(-DUMBRA_CLIENT_PDG_SIMPLE)
+endif (UMBRA_CLIENT_PDG_SIMPLE)
+
+
 option(UMBRA_CLIENT_NULL_1_BYTE_TO_1_BYTE
         "UMBRA NULL CLIENT for 1-byte to 1-byte mapping"
         OFF)
@@ -160,6 +168,13 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${BASE_C_FLAGS}")
 
 #file(GLOB srcs core/*.c core/*.cpp clients/*.c client/*.cpp clients/hashtable/*.c)
 file(GLOB base_srcs core/*.c core/*.cpp)
+
+if (UMBRA_CLIENT_PDG_SIMPLE)
+  add_library(pdg1 SHARED ${base_srcs} clients/client-pdg-simple.c)
+  configure_DynamoRIO_client(pdg1)
+endif (UMBRA_CLIENT_PDG_SIMPLE)
+
+
 
 if (UMBRA_CLIENT_FALSE_SHARING_DETECTION)
   add_library(fsd SHARED ${base_srcs} clients/client-fsd.c)
